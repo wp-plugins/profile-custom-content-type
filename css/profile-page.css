@@ -1,0 +1,166 @@
+.post-php .add-new-h2,
+.post-new-php .add-new-h2{
+	display: none;
+}
+.field-item .textarea-shell{
+	margin:-15px 0 0 0;
+}
+.inside{ position: relative; overflow: hidden; }
+.hndle span{ text-transform: capitalize; }
+/* Name */
+.name span input,
+.project-title input {
+	font-size:22px;
+	padding:5px 2px 1px;
+}
+
+.field-item span{
+	float: left;
+	margin-top: 5px;
+}
+.field-item .textarea-shell,
+.field-item .mceEditor{
+	margin: 0;
+	width:100%;
+}
+.field-item label{
+	display: block;
+	color:#888;
+	font-size: 11px;
+	margin-left: 2px;
+}
+.field-item hr{
+	border:0;
+	height: 0;
+	border-top: 1px solid rgba(0,0,0,0.1);
+	border-bottom: 1px solid rgba(255,255,255, 0.3);
+}
+
+
+#post-body-content  select{
+    font-size: 12px;
+    height: 21px;
+    margin-top: 0;
+    padding: 2px 4px;
+}
+#post-body-content textarea{
+	display: block;
+	min-height: 200px;
+	min-width: 661px;
+}
+/* Address */
+.address{
+	width: 533px;
+}
+#side-info-column .address div{
+	width:253px;
+}
+#side-info-column .address input{
+	width:253px;
+}
+#side-info-column .field-item textarea{
+	width:253px;
+	height: 300px;
+	display: block;
+}
+
+.wrap-fields{
+	clear:both;
+}
+/* add fields */
+.field-shell,
+.description,
+.add-multiple{
+	clear: both;
+	float: left;
+	margin: 10px 0 0;
+}
+.field-shell{
+	width: 100%;
+}
+.remove-fields{
+	float: left;
+	margin-top: 5px;
+}
+
+/* ----- Tabs ----- */
+#tabs .ui-tabs-nav{
+	border-bottom: 1px solid #CCCCCC;
+    padding-bottom: 0;
+    height: 30px;
+    margin-bottom: 10px;
+}
+.ui-tabs-nav li.ui-state-active,
+.ui-tabs-nav li a:hover{
+	border-color: #CCCCCC #CCCCCC #FFFFFF;
+}
+
+.ui-tabs-nav li{
+    border-color: #DFDFDF #DFDFDF #CCC;
+    border-radius: 3px 3px 0 0;
+    border-style: solid;
+    border-width: 1px;
+    color: #AAAAAA;
+    display: inline-block;
+    font-size: 17px;
+    line-height: 19px;
+    margin: 0 6px -1px 0;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #FFFFFF;
+}
+.ui-tabs-nav li a{
+	color: #AAAAAA;
+	text-decoration: none;
+	float: left;
+	padding: 4px 14px 6px 14px;
+}
+.ui-tabs-nav li.ui-state-active a{
+	color:#464646;
+	padding: 4px 14px 6px 14px;
+}
+.ui-statehover {
+	background: #EEE;
+}
+
+.picture img.attachment-thumbnail{
+	padding: 2px;
+	background: none repeat scroll 0 0 #FFFFFF;
+    border-bottom: 1px solid #D7D7D7;
+    border-left: 1px solid #F2F2F2;
+    border-right: 1px solid #F2F2F2;
+	margin-bottom: 10px;
+}
+
+/*for checkboxes to display in one line*/
+.days label {
+	display: inline;
+	margin-right: 10px;
+}
+
+.days {
+	clear: left;
+	margin-bottom: 0px;
+}
+
+/* office hours horizontal rules */
+.officehours div.wrap-fields hr {
+	clear: left;
+	display: block;
+	margin-top: 40px;
+
+}
+
+/* office hours first horizontal rule */
+.officehours div.wrap-fields:first-child hr {
+	margin-top: 10px;
+}
+
+/*separators on profile page view have a small margin*/
+.separator {
+	margin-left: 5px;
+	margin-right: 5px;
+}
+
+.description{
+	margin-top:0 ;
+}
