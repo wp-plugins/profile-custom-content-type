@@ -1,4 +1,4 @@
-=== Profile Builder ===
+=== Profile CCT ===
 Contributors: enej, ejackisch, alekarsovski
 Tags: profile, user
 Requires at least: 3.2
