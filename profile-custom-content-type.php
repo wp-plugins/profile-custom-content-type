@@ -1,14 +1,14 @@
 <?php
 /**
- * Plugin Name: Profile Custom Content Type
- * Plugin URI:
- * Text Domain: profile_cct
- * Domain Path: /languages
- * Description: Allows administrators to manage user profiles better in order to display them on their websites
- * Author: Enej Bajgoric, Eric Jackish, Aleksandar Arsovski, CTLT, UBC
- * Version: 1.1
- * Licence: GPLv2
- * Author URI: http://ctlt.ubc.ca
+Plugin Name: Profile Custom Content Type
+Plugin URI:
+Version: 1.1.8.2
+Text Domain: profile_cct
+Domain Path: /languages
+Description: Allows administrators to manage user profiles better in order to display them on their websites
+Author: Enej Bajgoric, Eric Jackish, Aleksandar Arsovski, CTLT, UBC
+Licence: GPLv2
+Author URI: http://ctlt.ubc.ca
  */
 
 
@@ -40,12 +40,13 @@
 if ( !defined('ABSPATH') )
 	die('-1');
 
-define('PROFILE_CCT_DIR', plugin_dir_path(__FILE__));
+define( 'PROFILE_CCT_DIR_PATH', plugin_dir_path( __FILE__ ) );
+define( 'PROFILE_CCT_BASENAME', plugin_basename(__FILE__) );
+define( 'PROFILE_CCT_DIR_URL',  plugins_url( ''  , PROFILE_CCT_BASENAME ) );
 
+require(PROFILE_CCT_DIR_PATH.'profile-taxonomies.php');
+require(PROFILE_CCT_DIR_PATH.'profile-manage-table.php');
 
-
-require(PROFILE_CCT_DIR.'profile-taxonomies.php');
-require(PROFILE_CCT_DIR.'profile-manage-table.php');
 if(!class_exists('Profile_CCT')):
 class Profile_CCT {
 	static private $classobj = NULL;
@@ -55,6 +56,7 @@ class Profile_CCT {
 	static public  $settings_options = NULL;
 	static public  $form_fields = NULL;
 	static public  $taxonomies = NULL;
+	static public  $is_main_query = false;
 	static public  $form_field_options = NULL;
 	static public  $option     = NULL; 
 	static public  $current_form_fields = NULL; // stores the current state of the form field... the labels and if it is on the banch... 
@@ -69,13 +71,18 @@ class Profile_CCT {
 	 */
 	public function __construct () {
 
+		add_shortcode('profilelist', array( $this, 'profile_list_shortcode') );
+		add_shortcode('profile', array( $this, 'profile_single_shortcode') );
+		
 		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
 		/* saving the post meta info */
 		add_action( 'edit_form_advanced', array($this, 'edit_form_advanced'));
 		add_action( 'add_meta_boxes_profile_cct', array($this, 'edit_post')); // add meta boxes
 
 		add_action( 'init',  array( $this,'profiles_cct_init'),0) ;
-
+		add_filter( 'posts_orderby', array( $this,'orderby_menu' ) );
+		add_action( 'pre_get_posts', array( $this,'pre_get_posts') );
+		
 		add_action( 'template_redirect',  array( $this,'check_freshness'));
 		add_action( 'wp_insert_post_data', array( $this,'save_post_data'),10,2);
 		
@@ -88,6 +95,8 @@ class Profile_CCT {
 		add_action( 'admin_print_styles-post.php',array( $this,'add_style_edit'));
 
 		add_action( 'admin_init',array($this,'admin_init'));
+		
+		
 
 		$this->settings_options = get_option('Profile_CCT_settings');
 
@@ -195,8 +204,8 @@ class Profile_CCT {
 			wp_enqueue_style("thickbox");
 			wp_enqueue_script("thickbox");
 	
-			wp_enqueue_style( 'profile-cct-edit-post', WP_PLUGIN_URL . '/profile-cct/css/profile-page.css' );
-			wp_enqueue_script( 'profile-cct-edit-post', WP_PLUGIN_URL . '/profile-cct/js/profile-page.js',array('jquery-ui-tabs' ) );
+			wp_enqueue_style( 'profile-cct-edit-post',PROFILE_CCT_DIR_URL. '/css/profile-page.css' );
+			wp_enqueue_script( 'profile-cct-edit-post',PROFILE_CCT_DIR_URL. '/js/profile-page.js',array('jquery-ui-tabs' ) );
 			wp_localize_script( 'profile-cct-edit-post', 'profileCCTSocialArray', profile_cct_social_options());
 
 		endif;
@@ -213,8 +222,6 @@ class Profile_CCT {
 	 * @return string
 	 */
 	private function get_plugin_data ( $value = 'Version' ) {
-		//$e = new Exception;
-		//var_dump($e->getTraceAsString());
 		if(!is_admin()):
 			return;
 		endif;
@@ -308,25 +315,37 @@ class Profile_CCT {
 			__( 'Public Profile', $this -> get_textdomain() ),
 			'edit_profile_cct', 'public_profile',
 			array( $this, 'public_profile' ) );
-		
+			
+		$order_page = add_submenu_page(
+			'edit.php?post_type=profile_cct',
+			__( 'Order Profiles', $this -> get_textdomain() ),
+			__( 'Order Profiles', $this -> get_textdomain() ),
+			'manage_options', "order_profiles",
+			array( $this, 'admin_order_page' ) );
+			
 		$page = add_submenu_page(
 			'edit.php?post_type=profile_cct',
 			__( 'Settings', $this -> get_textdomain() ),
 			__( 'Settings', $this -> get_textdomain() ),
 			'manage_options', __FILE__,
 			array( $this, 'admin_pages' ) );
-
+			
+		add_action( 'admin_print_styles-' . $order_page, array( $this, 'order_profiles_admin_styles' ) );
+		add_action( 'admin_print_scripts-' . $order_page, array( $this, 'order_profiles_admin_scripts' ) );
+				
 		add_action( 'admin_print_styles-' . $page, array( $this, 'admin_styles' ) );
 		add_action( 'admin_print_scripts-' . $page, array( $this, 'admin_scripts' ) );
+		
 
 	}
-
+	
 	function public_profile(){
 	
 		// a page asking the user to create a public profile 
 		wp_die('redirect didn\'t work');
 	}
-
+	
+	
 	/**
 	 * admin_styles function.
 	 *
@@ -336,19 +355,19 @@ class Profile_CCT {
 	public function admin_styles() {
 
 		// todo: this could be done with one css file
-		wp_enqueue_style( 'profile-cct-admin', WP_PLUGIN_URL . '/profile-cct/css/admin.css' );
+		wp_enqueue_style( 'profile-cct-admin',PROFILE_CCT_DIR_URL. '/css/admin.css' );
 		switch( $_GET['view'] ) {
 		case "form":
 		case "page":
 		case "list":
-			wp_enqueue_style( 'profile-cct-form', WP_PLUGIN_URL . '/profile-cct/css/form.css' );
+			wp_enqueue_style( 'profile-cct-form',PROFILE_CCT_DIR_URL. '/css/form.css' );
 			break;
 		default:
-			wp_enqueue_style( 'profile-cct-settings', WP_PLUGIN_URL . '/profile-cct/css/settings.css' );
+			wp_enqueue_style( 'profile-cct-settings',PROFILE_CCT_DIR_URL. '/css/settings.css' );
 			break;
 
 		}
-		wp_enqueue_style( 'profile-cct-general', WP_PLUGIN_URL . '/profile-cct/css/general.css' );
+		wp_enqueue_style( 'profile-cct-general',PROFILE_CCT_DIR_URL. '/css/general.css' );
 	}
 	/**
 	 * admin_scripts function.
@@ -360,30 +379,30 @@ class Profile_CCT {
 
 		switch( $_GET['view'] ) {
 		case "form":
-			wp_enqueue_script( 'profile-cct-form', WP_PLUGIN_URL . '/profile-cct/js/form.js',array('jquery','jquery-ui-sortable') );
-			wp_enqueue_script( 'profile-cct-tabs', WP_PLUGIN_URL . '/profile-cct/js/tabs.js',array('jquery','jquery-ui-tabs') );
+			wp_enqueue_script( 'profile-cct-form',PROFILE_CCT_DIR_URL. '/js/form.js',array('jquery','jquery-ui-sortable') );
+			wp_enqueue_script( 'profile-cct-tabs',PROFILE_CCT_DIR_URL. '/js/tabs.js',array('jquery','jquery-ui-tabs') );
 			wp_localize_script( 'profile-cct-form', 'ProfileCCT', array(
 					'page' => 'form'
 				));
 			break;
 		case "page":
-			wp_enqueue_script( 'profile-cct-tabs', WP_PLUGIN_URL . '/profile-cct/js/tabs.js',array('jquery','jquery-ui-tabs') );
-			wp_enqueue_script( 'profile-cct-form', WP_PLUGIN_URL . '/profile-cct/js/form.js',array('jquery','jquery-ui-sortable') );
-			wp_enqueue_script( 'profile-cct-profile', WP_PLUGIN_URL . '/profile-cct/js/profile.js',array('jquery') );
+			wp_enqueue_script( 'profile-cct-tabs',PROFILE_CCT_DIR_URL. '/js/tabs.js',array('jquery','jquery-ui-tabs') );
+			wp_enqueue_script( 'profile-cct-form',PROFILE_CCT_DIR_URL. '/js/form.js',array('jquery','jquery-ui-sortable') );
+			wp_enqueue_script( 'profile-cct-profile',PROFILE_CCT_DIR_URL. '/js/profile.js',array('jquery') );
 			wp_localize_script( 'profile-cct-form', 'ProfileCCT', array(
 					'page' => 'page'
 				));
 			break;
 		case "list":
-			wp_enqueue_script( 'profile-cct-form', WP_PLUGIN_URL . '/profile-cct/js/form.js',array('jquery','jquery-ui-sortable') );
-			wp_enqueue_script( 'profile-cct-profile', WP_PLUGIN_URL . '/profile-cct/js/profile.js',array('jquery') );
+			wp_enqueue_script( 'profile-cct-form',PROFILE_CCT_DIR_URL. '/js/form.js',array('jquery','jquery-ui-sortable') );
+			wp_enqueue_script( 'profile-cct-profile',PROFILE_CCT_DIR_URL. '/js/profile.js',array('jquery') );
 			wp_localize_script( 'profile-cct-form', 'ProfileCCT', array(
 					'page' => 'list'
 				));
 			break;
 			
 		default:
-			// wp_enqueue_script( 'profile-cct-settings', WP_PLUGIN_URL . '/profile-cct/js/settings.js' );
+			// wp_enqueue_script( 'profile-cct-settings',PROFILE_CCT_DIR_URL. '/js/settings.js' );
 			break;
 
 		}
@@ -397,12 +416,45 @@ class Profile_CCT {
 	 */
 	public function admin_pages() {
 		$time_start = $this->microtime_float();
-		require(PROFILE_CCT_DIR.'class/admin_pages.php');
+		require( PROFILE_CCT_DIR_PATH.'class/admin_pages.php' );
 		
 		$time_end = $this->microtime_float();
 		$time = $time_end - $time_start;
 
 		echo "<!-- time to render  $time seconds -->\n";
+	}
+	/**
+	 * admin_order_page function.
+	 * Page lets you reorder people 
+	 * @access public
+	 * @return void
+	 */
+	public function admin_order_page() {
+		
+		require( PROFILE_CCT_DIR_PATH.'class/order_profiles.php' );
+		
+	}
+	/**
+	 * order_profiles_admin_styles function.
+	 * styles for the order people page
+	 * @access public
+	 * @return void
+	 */
+	function order_profiles_admin_styles() {
+	
+		wp_enqueue_style( 'profile-cct-order',PROFILE_CCT_DIR_URL. '/css/order-profiles.css' );
+	
+	}
+	/**
+	 * order_profiles_admin_scripts function.
+	 * scripts for the order people page
+	 * @access public
+	 * @return void
+	 */
+	function order_profiles_admin_scripts() {
+	
+		wp_enqueue_script( 'profile-cct-order',PROFILE_CCT_DIR_URL. '/js/order-profiles.js',array('jquery','jquery-ui-sortable') );
+	
 	}
 	/**
 	 * profiles_cct_init function.
@@ -417,7 +469,51 @@ class Profile_CCT {
 		$this->load_scripts_cpt_profile_cct();
 		
 	}
+	/**
+	 * orderby_menu function.
+	 * 
+	 * @access public
+	 * @param mixed $orderby
+	 * @return void
+	 */
+	function orderby_menu( $orderby ) {
+		$new_orderby = 'menu_order ASC';
+		
+		if( $this->is_main_query ): // only run this if we are dealing with the main query
+			// check to see that we are on the profile taxonomies
+			if( is_array( $this->taxonomies ) ):
+			
+				foreach( $this->taxonomies as $tax ):
+				
+					if( is_tax( profile_cct_taxonomy_id( $tax['single'] ) ) )
+						return $new_orderby;
+						
+				endforeach;
+			endif;
+			// check that we are on the profile cct
+			if( is_post_type_archive('profile_cct')  )
+				return $new_orderby;
+			endif;
+			
+		return $orderby;
+	}
 	
+	/**
+	 * pre_get_posts function.
+	 * used to check that we are only doing this on the main query
+	 * shortcodes order things this way be default
+	 * @access public
+	 * @param mixed $query
+	 * @return void
+	 */
+	function pre_get_posts( $query ) {
+		
+		if( $query->is_main_query() )
+			$this->is_main_query = true;
+		else
+			$this->is_main_query = false;
+		
+	}
 	/**
 	 * reset_filters function.
 	 * 
@@ -467,7 +563,7 @@ class Profile_CCT {
 			'labels' => $labels,
 			'hierarchical' => false,
 			'menu_icon' => plugins_url( 'icon.png' , __FILE__ ),
-			'supports' => array( 'revisions','author'  ),
+			'supports' => array( 'revisions','author','page-attributes'),
 			'public' => true,
 			'show_ui' => true,
 			'show_in_menu' => true,
@@ -509,7 +605,7 @@ class Profile_CCT {
 	function load_scripts_cpt_profile_cct() {
 		if(!is_admin()):
 			wp_enqueue_script('jquery-ui-tabs');
-			wp_enqueue_style( 'profile-cct', WP_PLUGIN_URL . '/profile-cct/css/profile-cct.css' );
+			wp_enqueue_style( 'profile-cct',PROFILE_CCT_DIR_URL. '/css/profile-cct.css' );
 		endif;
 		
 	}
@@ -614,7 +710,7 @@ class Profile_CCT {
 	 * @return void
 	 */
 	function edit_post() {
-		global $post, $post_new_file, $pagenow, $current_user, $post_type;
+		global $post, $post_new_file, $pagenow, $current_user, $post_type_object;
 		
 		$post_new_file = '#';
 		
@@ -669,11 +765,10 @@ class Profile_CCT {
 		remove_meta_box('authordiv', 'post', 'normal');
 		remove_meta_box('revisionsdiv', 'post', 'normal');
 		
-		
 		if (  0 < $post->ID && wp_get_post_revisions( $post->ID ) )
 			add_meta_box('revisionsdiv', __('Revisions'), 'post_revisions_meta_box', null, 'side', 'low');
 		
-		if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) )
+		if ( is_super_admin() || current_user_can( $post_type_object->cap->edit_others_posts ) || current_user_can('administrator') )
 			add_meta_box('authordiv', __('Author'), array($this,'post_author_meta_box'), null, 'side', 'low');
 		
 		add_meta_box('submitdiv', __('Publish'), 'post_submit_meta_box', null, 'side', 'high');
@@ -1090,7 +1185,7 @@ Make sure that you select who this is supposed to be.<br />
 		
 		$label 		= ( (isset($this->current_form_fields) && !empty($this->current_form_fields[$type]['label'])) ? $this->current_form_fields[$type]['label'] : $label);		
 ?>
-	 		<<?php echo $shell; ?> class="<?php echo $is_in_form.' '.esc_attr( $type ); ?> field-item <?php echo $class." ".$width; ?>" for="cct-<?php echo esc_attr( $type ); ?>" data-options="<?php echo esc_attr( $this->serialize($options)); ?>" >
+	 		<<?php echo $shell; ?> class="<?php echo $is_in_form.' shell-'.esc_attr( $type ); ?> field-item <?php echo $class." ".$width; ?>" for="cct-<?php echo esc_attr( $type ); ?>" data-options="<?php echo esc_attr( $this->serialize($options)); ?>" >
 
 			<a href="#edit-field" class="edit">Edit</a>
 			<div class="edit-shell" style="display:none;">
@@ -1158,10 +1253,8 @@ Make sure that you select who this is supposed to be.<br />
 		?>
 	 	
 	 	<?php
-		if( isset($show_multiple) && $show_multiple ): ?>
-
-	 	<?php
-			endif;
+		if( isset($show_multiple) && $show_multiple ): ?> <?php
+		endif;
 	}
 	/**
 	 * end_field function.
@@ -1184,7 +1277,7 @@ Make sure that you select who this is supposed to be.<br />
 			if($action!='edit'):
 				echo '<a href="#add" '. $style_multiple .' class="button add-multiple">Add another</a>';
 			else:
-				echo '<a href="#add" '. $style_multiple .' class="button disabled">Add another</a> <em>disabled in preview</em>';
+				echo '<span class="add-multiple"><a href="#add" '. $style_multiple .' class="button disabled">Add another</a> <em>disabled in preview</em></span>';
 			endif;
 	 	
 	 
@@ -1203,7 +1296,7 @@ Make sure that you select who this is supposed to be.<br />
 	 */
 	function input_field( $options ) {
 		
-		require(PROFILE_CCT_DIR.'class/input_field.php');
+		require(PROFILE_CCT_DIR_PATH.'class/input_field.php');
 	}
 
 	/**
@@ -1214,7 +1307,7 @@ Make sure that you select who this is supposed to be.<br />
 	 * @return void
 	 */
 	function display_text($options) {
-		require(PROFILE_CCT_DIR.'class/display_text.php');
+		require(PROFILE_CCT_DIR_PATH.'class/display_text.php');
 	}
 
 	/**
@@ -1657,8 +1750,8 @@ Make sure that you select who this is supposed to be.<br />
 	}
 	
 	function delete_all(){
-	
-		if(current_user_can('administrator')):
+		// only administator can do this… 
+		if( current_user_can('administrator') ):
 			
 			foreach( array("form","page","list") as $where):
 				// delete all the fields
@@ -1680,8 +1773,8 @@ Make sure that you select who this is supposed to be.<br />
 			// also delete all the taxonomies 
 			delete_option('Profile_CCT_taxonomy');
 			
-			// also the global settings 
-			if(current_user_can('manage_sites') && $_GET['delete_profile_cct_data'] == "DELETE-GLOBAL" )
+			// also the global settings only super admin can do this
+			if(current_user_can( 'manage_sites' ) && $_GET['delete_profile_cct_data'] == "DELETE-GLOBAL" )
 				delete_site_option('Profile_CCT_global_settings');
 			
 			wp_die('all Settings data was deleted');
@@ -1696,7 +1789,7 @@ Make sure that you select who this is supposed to be.<br />
 	 */
 	function default_options($type = 'form') {
 		
-		require(PROFILE_CCT_DIR.'class/default_options.php');
+		require(PROFILE_CCT_DIR_PATH.'class/default_options.php');
 		
 		return apply_filters( 'profile_cct_default_options', $options, $type);
 		
@@ -1717,7 +1810,7 @@ Make sure that you select who this is supposed to be.<br />
 				array( "type"=> "education" ),
 				array( "type"=> "textarea"  ),
 				array( "type"=> "text" ),
-				array( "type"=> "project" ),
+				array( "type"=> "projects" ),
 				array( "type"=> "courses" ),
 				array( "type"=> "data" )
 			));
@@ -1807,6 +1900,120 @@ Make sure that you select who this is supposed to be.<br />
 	        return FALSE;
 	}
 	
+	//SHORTCODES
+	/**
+	 * profile_list_shortcode function.
+	 * 
+	 * @access public
+	 * @param mixed $atts
+	 * @return void
+	 */
+	function profile_list_shortcode($atts){
+		$tax_query = array();
+		$taxonomies = get_taxonomies();
+		foreach($atts as $key=>$att):
+			if(in_array("profile_cct_".$key, $taxonomies)):
+				
+				array_push(
+					$tax_query,
+					array(
+						'taxonomy'=>'profile_cct_'.$key,	////aaghhjjjhg forgot the taxonomies are prefixed
+						'field'=>'slug',
+						'terms'=>$att,		
+						)
+					);
+			endif;
+		endforeach;
+		
+		//Whether to OR or AND the criterias
+		if($atts['query']):	
+			$tax_query['relation'] = $atts['query'];
+		endif;
+		
+		$query = array(
+			'post_type'=>'Profile_CCT',
+			'order'=>'ASC',
+			'orderby'=>'title',
+			'tax_query'=>$tax_query,
+			'post__not_in'=>explode(",", $atts['exclude']),
+			'posts_per_page'=>-1
+			);
+		
+		//If include is set
+		if($atts['include']):
+			$query['post__in'] = explode(",", $atts['include']);
+		endif;
+		
+		$the_query = new WP_Query($query);
+	
+		ob_start();	//we want to collect the output and return it instead of displaying it.
+		
+		if($atts['display'] == 'name'):
+			echo '<ul class="profilelist-shortcode">';
+		endif;
+		
+		while($the_query->have_posts()): $the_query->the_post();
+			if($atts['display'] == 'name'):
+				echo '<li><a href="' . get_permalink() . '">' . get_the_title() . '</a></li>';
+			elseif($atts['display'] == 'full'):
+				the_content();
+			else:
+				the_excerpt();
+			endif;
+		endwhile;
+		
+		if($atts['display'] == 'name'):
+			echo '</ul>';
+		endif;
+		
+		wp_reset_postdata();
+		$content = ob_get_contents();
+		ob_end_clean();
+
+		return $content;
+		
+	}
+	
+
+	/**
+	 * profile_single_shortcode function.
+	 * 
+	 * @access public
+	 * @param mixed $atts
+	 * @return void
+	 */
+	function profile_single_shortcode($atts){
+		if(!isset($atts['person'])):
+			return 'You must specify a person';
+		endif;
+	
+		$the_query = new WP_Query('post_type=Profile_CCT&name='.$atts['person']);
+		ob_start();	//we want to collect the output and return it instead of displaying it.
+
+		while($the_query->have_posts()): $the_query->the_post();
+			if($atts['display'] == 'list'):
+				the_excerpt();
+			else:
+				the_content();
+			endif;
+		endwhile;
+		
+		wp_reset_postdata();
+		$content = ob_get_contents();
+		ob_end_clean();
+		return $content;
+		
+	}
+	
+	
+
+//END SHORTCODES	
+	/**
+	 * install function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
 	function install() {
 		$field = Profile_CCT::get_object();
 		$field->register_cpt_profile_cct();
@@ -1833,6 +2040,12 @@ Make sure that you select who this is supposed to be.<br />
 		endforeach;
 		
 	}
+	/**
+	 * uninstall function.
+	 * 
+	 * @access public
+	 * @return void
+	 */
 	function uninstall() {
 		
 		// remove permissions

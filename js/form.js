@@ -75,7 +75,6 @@ var Profile_CCT_FORM ={
 	updateDescription : function(e){
 		var el = jQuery(this);
 		
-		console.log( )
 		el.parent().parent().addClass('changed');
 		setTimeout( function () {		
 			var text_label = el.val();

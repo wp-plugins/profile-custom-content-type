@@ -122,7 +122,7 @@ function profile_cct_picture_display(  $data, $options  ){
 	$show 	= (is_array($show) ? $show : array());
 	$href 	= ( isset($post) ? get_permalink() : "#" );
 	
-	if(isset($post)):
+	if( isset($post) ):
 		$field->display_text( array( 'field_type'=>$type, 'class'=>'', 'type'=>'shell', 'tag'=>'a','link_to'=>$link_to, 'href'=>$href ) );
 		echo profile_cct_get_the_post_thumbnail($post->ID, 'full');
 		$field->display_text( array( 'field_type'=>$type, 'type'=>'end_shell', 'tag'=>'a','link_to'=>$link_to) );
@@ -196,7 +196,7 @@ function profile_cct_picture_init(){
 	wp_enqueue_style( 'wp-admin' );
 	wp_enqueue_style( 'colors' );
 	wp_enqueue_style( 'ie' );
-	wp_enqueue_style('user-avatar', plugins_url('/profile-cct/css/profile-picture.css'), 'css');
+	wp_enqueue_style('user-avatar', PROFILE_CCT_DIR_URL.'/css/profile-picture.css', 'css');
 	wp_enqueue_style('imgareaselect');
 	wp_enqueue_script('imgareaselect');
 	do_action('admin_print_styles');
@@ -345,6 +345,18 @@ function profile_cct_picture_add_photo_step2($post_id)
 
 		list($width, $height, $type, $attr) = getimagesize( $file );
 		
+		//If the image is below the minimum width or height
+		if($width < $picture_options['width'] || $height < $picture_options['height']):
+			echo "<p>The image you selected is too small. Please select an image with width at least {$picture_options['width']} and height at least {$picture_options['height']}</p>";
+			profile_cct_picture_add_photo_step1($post_id);
+			return;
+		endif;
+		//If the image is exactly the right size
+		if($width == $picture_options['width'] && $height == $picture_options['height']):
+			profile_cct_picture_add_photo_step3($post_id,  true, $id);
+			return;
+		endif;
+		
 		if ( $width > 500 ) {
 			$oitar = $width / 500;
 			$image = wp_crop_image($file, 0, 0, $width, $height, 500, $height / $oitar, false, str_replace(basename($file), 'midsize-'.basename($file), $file));
@@ -484,7 +496,7 @@ function profile_cct_picture_add_photo_step2($post_id)
  * @param mixed $uid
  * @return void
  */
-function profile_cct_picture_add_photo_step3($post_id)
+function profile_cct_picture_add_photo_step3($post_id, $no_crop=false, $attachment_id=0)
 {
 	$picture_options = profile_cct_get_picture_options();
 	
@@ -494,9 +506,19 @@ function profile_cct_picture_add_photo_step3($post_id)
 			$_POST['width'] = $_POST['width'] * $_POST['oitar'];
 			$_POST['height'] = $_POST['height'] * $_POST['oitar'];
 		}
+		
+	if($no_crop):
+		$_POST['attachment_id'] = $attachment_id;
+	endif;	
+		
 	$original = get_attached_file( $_POST['attachment_id'] );
 
-	$cropped = wp_crop_image($_POST['attachment_id'], $_POST['x1'], $_POST['y1'], $_POST['width'], $_POST['height'], $picture_options['width'], $picture_options['height']);
+	if($no_crop):
+		$cropped = wp_crop_image($_POST['attachment_id'], 0, 0, $picture_options['width'], $picture_options['height'], $picture_options['width'], $picture_options['height']);
+	else:
+		$cropped = wp_crop_image($_POST['attachment_id'], $_POST['x1'], $_POST['y1'], $_POST['width'], $_POST['height'], $picture_options['width'], $picture_options['height']);
+	endif;
+	
 	if ( is_wp_error( $cropped ) )
 			wp_die( __( 'Image could not be processed.  Please go back and try again.' ), __( 'Image Processing Error' ) );
 
@@ -559,20 +581,39 @@ add_action("admin_init", "profile_cct_picture_delete");
 function profile_cct_picture_delete(){
 		
 		global $pagenow;
-		
+		if(!is_numeric($_GET['post'])):
+			return;
+		endif;
 		$current_user = wp_get_current_user();
 		
+		$post = wp_get_single_post($_GET['post']);
+		$post_image_id = get_post_meta($_GET['post'], '_thumbnail_id', true);
+		
+		$post_author = $post->post_author;
 		// If user clicks the remove avatar button, in URL deleter_avatar=true
-		if( isset($_GET['delete_avatar']) && wp_verify_nonce($_GET['_nononce'], 'profile_cct_picture') && ( $_GET['u'] == $current_user->id || current_user_can('edit_users')) )
+		if( isset($_GET['delete_avatar']) && wp_verify_nonce($_GET['_nononce'], 'profile_cct_picture') && ( $post_author == $current_user->id || current_user_can('edit_users')) )
 		{
 			$user_id = $_GET['user_id'];
 			if(is_numeric($user_id))
 				$user_id = "?user_id=".$user_id;
 				
-			profile_cct_picture_delete_files($_GET['u']);
-			wp_redirect(get_option('siteurl') . '/wp-admin/'.$pagenow.$user_id);
-			
+			profile_cct_picture_delete_files($_GET['post'], $post_image_id);
+			wp_redirect(admin_url( 'post.php?post='.$_GET['post'].'&action=edit') );
+			exit;
 		}		
+}
+
+
+
+/**
+ * profile_cct_picture_delete_files function.
+ * 
+ * @access public
+ * @param $u
+ * @return void
+ */
+function profile_cct_picture_delete_files($post, $img){
+	wp_delete_attachment($img);
 }
 
 
@@ -602,9 +643,9 @@ function profile_cct_get_picture_options(){
  * @return
  *		Associative array of all picture related options
  */
-function profile_cct_get_the_post_thumbnail($post_id, $type){
-	if(current_theme_supports('post-thumbnails')):
-		return get_the_post_thumbnail($post_id, $type);
+function profile_cct_get_the_post_thumbnail( $post_id, $type ){
+	if( current_theme_supports( 'post-thumbnails' ) ):
+		return get_the_post_thumbnail( $post_id, $type );
 	else:
 		return "<p></p>";
 	endif;
