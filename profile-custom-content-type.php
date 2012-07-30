@@ -2,7 +2,7 @@
 /**
 Plugin Name: Profile Custom Content Type
 Plugin URI:
-Version: 1.1.8.2
+Version: 1.2
 Text Domain: profile_cct
 Domain Path: /languages
 Description: Allows administrators to manage user profiles better in order to display them on their websites
@@ -43,7 +43,7 @@ if ( !defined('ABSPATH') )
 define( 'PROFILE_CCT_DIR_PATH', plugin_dir_path( __FILE__ ) );
 define( 'PROFILE_CCT_BASENAME', plugin_basename(__FILE__) );
 define( 'PROFILE_CCT_DIR_URL',  plugins_url( ''  , PROFILE_CCT_BASENAME ) );
-
+require(PROFILE_CCT_DIR_PATH.'/class/profile_widget.php');
 require(PROFILE_CCT_DIR_PATH.'profile-taxonomies.php');
 require(PROFILE_CCT_DIR_PATH.'profile-manage-table.php');
 
@@ -70,9 +70,11 @@ class Profile_CCT {
 	 * @return void
 	 */
 	public function __construct () {
-
+		//remove_filter('template_redirect', 'redirect_canonical');
 		add_shortcode('profilelist', array( $this, 'profile_list_shortcode') );
 		add_shortcode('profile', array( $this, 'profile_single_shortcode') );
+		add_shortcode('profilesearch', array( $this, 'profile_search_shortcode') );
+		add_shortcode('profilenavigation', array( $this, 'profile_navigation_shortcode') );
 		
 		add_action( 'admin_menu', array( $this, 'add_menu_page' ) );
 		/* saving the post meta info */
@@ -84,6 +86,7 @@ class Profile_CCT {
 		add_action( 'pre_get_posts', array( $this,'pre_get_posts') );
 		
 		add_action( 'template_redirect',  array( $this,'check_freshness'));
+		
 		add_action( 'wp_insert_post_data', array( $this,'save_post_data'),10,2);
 		
 		add_action('the_post', array( $this,'reset_filters' ), 10, 1);
@@ -96,8 +99,14 @@ class Profile_CCT {
 
 		add_action( 'admin_init',array($this,'admin_init'));
 		
+		add_action( 'template_redirect', array($this,'process_search'));
 		
-
+		//add_action( 'template_redirect', array($this,'force_profile_cct_archive_page'));
+		
+		add_action( 'init', array($this, 'register_alphabet_taxonomy'));
+		
+		add_action( 'profile_cct_display_archive_controls', array($this, 'display_archive_controls'));
+		
 		$this->settings_options = get_option('Profile_CCT_settings');
 
 		$dir    = plugin_dir_path(__FILE__).'views/fields/';
@@ -476,9 +485,14 @@ class Profile_CCT {
 	 * @param mixed $orderby
 	 * @return void
 	 */
+	 
 	function orderby_menu( $orderby ) {
+	
+		if($this->automatic_ordering)
+			return $orderby;
+			
 		$new_orderby = 'menu_order ASC';
-		
+		//$new_orderby = 'menu_order ASC';
 		if( $this->is_main_query ): // only run this if we are dealing with the main query
 			// check to see that we are on the profile taxonomies
 			if( is_array( $this->taxonomies ) ):
@@ -507,11 +521,40 @@ class Profile_CCT {
 	 * @return void
 	 */
 	function pre_get_posts( $query ) {
+		if($query->get('post_type') != "profile_cct")return;
 		
-		if( $query->is_main_query() )
+		if( $query->is_main_query() ):
 			$this->is_main_query = true;
-		else
+			$this->automatic_ordering = true;
+			
+			$orderby = $this->settings_options['sort_order'];		//Default sort order
+			if(isset($_GET['orderby']))$orderby = $_GET['orderby'];	
+			
+			$query->set('order', 'asc');
+			if(isset($_GET['order']) && $_GET['order'] == "desc")$query->set('order', $_GET['order']);
+			
+			switch($orderby){
+				case 'last_name':
+					$query->set('meta_key', 'profile_cct_last_name');
+					$query->set('orderby', 'meta_value');
+					
+				break;
+				case 'first_name':
+					$query->set('orderby', 'title');
+	
+				break;
+				case 'date':
+					$query->set('orderby', 'date');
+					
+				break;
+				default:
+					$this->automatic_ordering = false; //orderby_menu function will sort profiles by their manually set order
+			}
+			
+			
+		else:
 			$this->is_main_query = false;
+		endif;
 		
 	}
 	/**
@@ -605,6 +648,7 @@ class Profile_CCT {
 	function load_scripts_cpt_profile_cct() {
 		if(!is_admin()):
 			wp_enqueue_script('jquery-ui-tabs');
+			wp_enqueue_script('jquery-ui-autocomplete');
 			wp_enqueue_style( 'profile-cct',PROFILE_CCT_DIR_URL. '/css/profile-cct.css' );
 		endif;
 		
@@ -827,6 +871,8 @@ Make sure that you select who this is supposed to be.<br />
 
 		endif;
 	}
+	
+	
 	/**
 	 * save_post_data function.
 	 *
@@ -885,10 +931,21 @@ Make sure that you select who this is supposed to be.<br />
 		$data['post_excerpt'] = $excerpt;
 		$data['post_content'] = $content;
 
-		if(is_array($_POST["profile_cct"]))
+		if(is_array($_POST["profile_cct"])):
 			update_post_meta($postarr['ID'], 'profile_cct', $profile_cct_data);
-
-		return $data;
+			update_post_meta($postarr['ID'], 'profile_cct_last_name', $profile_cct_data["name"]['last']);
+		endif;
+		
+		
+		//echo $first_letter;
+		
+		$first_letter = strtolower(substr($profile_cct_data["name"]['last'], 0, 1));
+		//if($first_letter && $postarr['ID']):
+			//echo $first_letter;
+			//echo $postarr['ID'];
+			( wp_set_post_terms($postarr['ID'], $first_letter, 'profile_cct_letter', false) );
+		//endif;
+		return $data;	
 
 	}
 	/* ============== FIELDS =============================================== */
@@ -1911,19 +1968,21 @@ Make sure that you select who this is supposed to be.<br />
 	function profile_list_shortcode($atts){
 		$tax_query = array();
 		$taxonomies = get_taxonomies();
-		foreach($atts as $key=>$att):
-			if(in_array("profile_cct_".$key, $taxonomies)):
-				
-				array_push(
-					$tax_query,
-					array(
-						'taxonomy'=>'profile_cct_'.$key,	////aaghhjjjhg forgot the taxonomies are prefixed
-						'field'=>'slug',
-						'terms'=>$att,		
-						)
-					);
-			endif;
-		endforeach;
+		if($atts):
+			foreach($atts as $key=>$att):
+				if(in_array("profile_cct_".$key, $taxonomies)):
+					
+					array_push(
+						$tax_query,
+						array(
+							'taxonomy'=>'profile_cct_'.$key,	////aaghhjjjhg forgot the taxonomies are prefixed
+							'field'=>'slug',
+							'terms'=>$att,		
+							)
+						);
+				endif;
+			endforeach;
+		endif;
 		
 		//Whether to OR or AND the criterias
 		if($atts['query']):	
@@ -1933,17 +1992,38 @@ Make sure that you select who this is supposed to be.<br />
 		$query = array(
 			'post_type'=>'Profile_CCT',
 			'order'=>'ASC',
-			'orderby'=>'title',
+			'orderby'=>'menu_order',
 			'tax_query'=>$tax_query,
 			'post__not_in'=>explode(",", $atts['exclude']),
-			'posts_per_page'=>-1
+			'posts_per_page'=>-1,
 			);
-		
+	
+	
+		if($atts['order']):
+			$query['order'] = $atts['order'];
+		endif;
+	
 		//If include is set
 		if($atts['include']):
 			$query['post__in'] = explode(",", $atts['include']);
 		endif;
 		
+		if($atts['orderby']):
+			switch($atts['orderby']){
+				case 'first_name':
+					$query['orderby'] = 'title';
+					break;
+				case 'last_name':
+					$query['meta_key']='profile_cct_'.$atts['orderby'];
+					$query['orderby'] = 'meta_value';
+					break;
+				case 'date':
+					$query['orderby'] = 'post_date';
+					break;
+			}
+			
+		endif;
+		//print_r($query);	
 		$the_query = new WP_Query($query);
 	
 		ob_start();	//we want to collect the output and return it instead of displaying it.
@@ -2005,8 +2085,241 @@ Make sure that you select who this is supposed to be.<br />
 		
 	}
 	
+	function get_all_names(){
+		global $wpdb;
+		$data = get_transient("profile_cct_name_list");
+		if(!$data):
+			$query = "SELECT post_title FROM $wpdb->posts WHERE post_type = 'profile_cct' AND post_status = 'publish'";
+			$data = $wpdb->get_results($query);
+			set_transient("profile_cct_name_list", $data, 10 * 60);
+		endif;
+		return $data;
+	}
 	
+	function profile_search_shortcode($atts){
+		//static $has_search_box = false;
+		ob_start();
+		?>
+		
+		<div class="profile-cct-search">
+			<form action="<?php echo get_bloginfo('siteurl'); ?>" method="get">
+				
+				<input type="text" name="s" class="profile-cct-search" />
+				<input type="hidden" name="post_type" value="profile_cct" />
+				<input type="submit" value="Search People" />
+			</form>
+		
+			<?
+			$names = array();
+			$query_results = $this->get_all_names();
+			foreach($query_results as $result):
+				$names[] = $result->post_title;
+			endforeach;
+			?>	
+			
+			<script>
+				jQuery(function() {
+					var availableTags = <?php echo json_encode($names); ?>;
+					jQuery( ".profile-cct-search" ).autocomplete({
+						source: availableTags
+					});
+				});
+			</script>
+			
+			
+			
+		</div>
+		<?
+		return ob_get_clean();
+	}
+	
+	function process_search(){
+		if(($_GET['post_type'] != 'profile_cct')):
+			return;
+		endif;
+		
+		$query = $_GET['s'];
+		
+		$page = get_page_by_title( $query, null, "profile_cct"); 
+		if(empty($page)):
+			return;
+			if(file_exists(get_stylesheet_directory().'/archive-profile_cct.php')):
+				include (get_stylesheet_directory().'/archive-profile_cct.php');
+				exit;
+			endif;
+		endif;
+		
+		$permalink = get_permalink($page->ID);
+		wp_redirect($permalink);
+		exit;
+	}
+	
+	
+	
+	function register_alphabet_taxonomy(){
+		if(!taxonomy_exists("profile_cct_letter")):
+		
+		$args = array(
+			'labels' => array ( 'name' => 'Letter', 'singular_name' => 'Letter' ),
+			'rewrite' => array(
+				'slug' => 'letter',
+				'with_front' => true,
+				'feeds' => true,
+				'pages' => true
+			),
+			'show_ui' => false,
+			'show_tagcloud' => false,
+			'show_in_nav_menus' => false,
+			'public' => true,
+			'query_var' => true,
+			'hierarchical' => false,
+			);
+		register_taxonomy( 'profile_cct_letter', 'profile_cct', $args );
+		endif;
+		
+		if(!term_exists('a', 'profile_cct')):
+			foreach(range('a','z') as $letter):
+				
+				( wp_insert_term($letter, 'profile_cct_letter'));
+			endforeach;
+		endif;
+	}
+	
+	function profile_navigation_shortcode($atts){
+		//Parse the comma seperated display_tax attribute and turn it into an associative array
+		if($atts['display_tax']):
+			$atts['display_tax'] = explode(',', $atts['display_tax']);
+			$tax_array = array();
+			foreach($atts['display_tax'] as $tax):
+				$tax_array['profile_cct_'.trim($tax)] = true;
+			endforeach;
+			$atts['display_tax'] = $tax_array;
+		endif;
+		
+		
+		echo do_action('profile_cct_display_archive_controls', array('mode'=>'shortcode','options'=>$atts));
+	}
 
+	function display_archive_controls($args){
+		global $wp_query;
+		//If we're neither on a profile_cct archive page nor trying to show the profilenav widget/shortcode....
+		if( $wp_query->get('post_type') != "profile_cct" && !$args['mode'] )
+			return;
+		
+		
+		if($args['mode']!='shortcode'):
+			//If we're not using the shortcode then load the settings from the settings page
+			$options = $this->settings_options['archive'];
+		else:
+			//If we're using shortcode, first see if we have set parameters and if so use them instead
+			if(!empty($args['options'])):
+				$options = $args['options'];
+			else:
+				$options = $this->settings_options['archive'];
+			endif;
+		endif;
+		?>
+		
+		
+		<div class="profile-cct-archive-controls">
+			<?php 
+			
+			if($options['display_searchbox']):
+				echo '<h6>Search By name</h6>';
+				echo $this->profile_search_shortcode(array());
+			endif;
+			
+			if(count($options['display_tax']) || $options['display_orderby']): 
+				$this->display_taxonomy_navigation($options);
+			endif;
+			
+			if($options['display_alphabet']):
+				$this->display_alphabet_navigation();
+			endif;
+			 
+			?>
+		</div>
+		<?php
+	}
+	
+	
+	function display_taxonomy_navigation($options){
+		?>
+		<div class="profile-cct-archive-filters" style="overflow:hidden;">
+			<h6>Filter &amp; Order Profiles</h6>
+			<form action="<?php echo get_bloginfo('siteurl'); ?>" method="get">
+			<?
+			$taxonomies = get_object_taxonomies("profile_cct"); //i swear this line used to be here and then disappeared.
+			foreach($taxonomies as $tax): 
+				
+				if(!$options['display_tax'][$tax])continue;	
+				?>
+				<div class="profile-cct-filter-box">	
+					<select name="<?php echo $tax; ?>">
+								<option value="">All</option>
+							<?php foreach(get_terms($tax) as $term): ?>
+								
+								<option value="<?php echo $term->slug;?>" <?php selected($term->slug, get_query_var($tax)); ?>><?php echo $term->name; ?></option>
+							<?php endforeach; ?>
+					</select>
+					<br />
+					<span class="small"><?php echo substr($tax, 12); /* strip off the prefix */ ?></span>
+				</div>
+				<?php 
+			endforeach; ?>	
+			
+			<?php if($options['display_orderby']): ?>
+				<div class="profile-cct-filter-box">
+					<select name="orderby">
+						<option value="">Default</option>
+						<option value="first_name" <?php selected('first_name', $_GET['orderby']); ?>>First Name</option>
+						<option value="last_name" <?php selected('last_name', $_GET['orderby']); ?>>Last Name</option>
+						<option value="date_added"  <?php selected('date', $_GET['orderby']); ?>>Date Added</option>
+					</select>
+					<br />
+					<span class="small">order by</small>
+				</div>
+			<?php endif; ?>
+			
+			<input type="hidden" name="post_type" value="profile_cct">
+			<input type="submit" value="Apply Filters" />
+			
+			</form>
+		</div>
+		<?
+	}
+	
+	
+	function display_alphabet_navigation(){
+		?>
+		<div class="profile-cct-archive-letters">
+			<h6>Show all profiles starting with letter: </h6>
+			<ul style="list-style-type:none;margin-left:0;">
+			<?php
+				$active_letters = get_terms("profile_cct_letter");
+				$l = array();
+				foreach($active_letters as $letter):
+					$l[] = strtoupper($letter->name);
+				endforeach;
+				foreach(range('A', 'Z') as $letter): ?>
+					<li style="display:inline;">
+						<?php
+						$current = get_query_var('profile_cct_letter');
+						if(!strcasecmp($current, $letter )):
+							echo '<strong>'.$letter.'</strong>';
+						elseif(in_array($letter, $l)): ?>
+							<a href="<?php echo get_bloginfo('siteurl'); ?>?post_type=profile_cct&amp;profile_cct_letter=<?php echo strtolower($letter); ?>"><?php echo $letter; ?></a>
+						<?php else: ?>
+							<?php echo $letter; ?>
+						<?php endif; ?>
+					</li>
+				<? endforeach; ?>
+			</ul>
+		</div>
+		<?
+	}
+	
+	
 //END SHORTCODES	
 	/**
 	 * install function.
