@@ -2,7 +2,7 @@
 /**
 Plugin Name: Profile Custom Content Type
 Plugin URI:
-Version: 1.2.1
+Version: 1.2.2.1
 Text Domain: profile_cct
 Domain Path: /languages
 Description: Allows administrators to manage user profiles better in order to display them on their websites
@@ -104,6 +104,8 @@ class Profile_CCT {
 		//add_action( 'template_redirect', array($this,'force_profile_cct_archive_page'));
 		
 		add_action( 'init', array($this, 'register_alphabet_taxonomy'));
+		
+		add_action( 'admin_init',  array( $this,'update_script'),0) ;
 		
 		add_action( 'profile_cct_display_archive_controls', array($this, 'display_archive_controls'));
 		
@@ -473,11 +475,40 @@ class Profile_CCT {
 	 */
 	function profiles_cct_init() {
 	
-		$this->taxonomies = get_option( 'Profile_CCT_taxonomy');
+		$this->taxonomies = get_option( 'Profile_CCT_taxonomy' );
 		$this->register_cpt_profile_cct();
 		$this->load_scripts_cpt_profile_cct();
 		
 	}
+	
+	/**
+	 * Check if the plugin is updated and if so resave all the data
+	 */
+	function update_script(){
+		global $post;
+		$previous_version = get_option( 'profile_cct_version', 0 );
+		$this->force_refresh();
+		if( version_compare( $this->version(), $previous_version, '>' ) ):
+			update_option( 'profile_cct_version', $this->version() );
+			$query = new WP_Query('post_type=profile_cct&post_status=published&posts_per_page=-1');
+			$count = 0;
+			while($query->have_posts()) : $query->the_post();
+				$_POST['profile_cct'] = get_post_meta($post->ID, "profile_cct"); 
+				
+				wp_update_post($post);
+				
+			endwhile; 
+
+		endif;
+	}
+	
+	function force_refresh(){
+		$this->settings_options["list_updated"] = 0;
+		$this->settings_options["page_updated"] = 0;
+		$this->settings_options["form_updated"] = 0;
+		update_option('Profile_CCT_settings', $this->settings_options);
+	}
+	
 	/**
 	 * orderby_menu function.
 	 * 
@@ -885,7 +916,6 @@ Make sure that you select who this is supposed to be.<br />
 	 */
 	function save_post_data( $data, $postarr ) {
 		global $post, $wp_filter;
-
 		if(!isset( $_POST["profile_cct"] ))
 			return $data;
 		
@@ -941,12 +971,11 @@ Make sure that you select who this is supposed to be.<br />
 		
 		
 		//echo $first_letter;
-		
 		$first_letter = strtolower(substr($profile_cct_data["name"]['last'], 0, 1));
 		//if($first_letter && $postarr['ID']):
 			//echo $first_letter;
 			//echo $postarr['ID'];
-			( wp_set_post_terms($postarr['ID'], $first_letter, 'profile_cct_letter', false) );
+			wp_set_post_terms($postarr['ID'], $first_letter, 'profile_cct_letter', false);
 		//endif;
 		kses_init_filters();
 		
@@ -2113,28 +2142,23 @@ Make sure that you select who this is supposed to be.<br />
 				<input type="hidden" name="post_type" value="profile_cct" />
 				<input type="submit" value="Search People" />
 			</form>
-		
-			<?
+			<?php
 			$names = array();
 			$query_results = $this->get_all_names();
-			foreach($query_results as $result):
+			foreach( $query_results as $result ):
 				$names[] = $result->post_title;
 			endforeach;
 			?>	
-			
 			<script>
-				jQuery(function() {
-					var availableTags = <?php echo json_encode($names); ?>;
+				jQuery( function() {
+					var availableTags = <?php echo json_encode( $names ); ?>;
 					jQuery( ".profile-cct-search" ).autocomplete({
 						source: availableTags
 					});
 				});
 			</script>
-			
-			
-			
 		</div>
-		<?
+		<?php
 		return ob_get_clean();
 	}
 	
@@ -2253,11 +2277,12 @@ Make sure that you select who this is supposed to be.<br />
 		<div class="profile-cct-archive-filters" style="overflow:hidden;">
 			<h6>Filter &amp; Order Profiles</h6>
 			<form action="<?php echo get_bloginfo('siteurl'); ?>" method="get">
-			<?
+			<?php
 			$taxonomies = get_object_taxonomies("profile_cct"); //i swear this line used to be here and then disappeared.
 			foreach($taxonomies as $tax): 
 				
-				if(!$options['display_tax'][$tax])continue;	
+				if(!$options['display_tax'][$tax])
+				continue;	
 				?>
 				<div class="profile-cct-filter-box">	
 					<select name="<?php echo $tax; ?>">
@@ -2291,7 +2316,7 @@ Make sure that you select who this is supposed to be.<br />
 			
 			</form>
 		</div>
-		<?
+		<?php
 	}
 	
 	
@@ -2318,10 +2343,10 @@ Make sure that you select who this is supposed to be.<br />
 							<?php echo $letter; ?>
 						<?php endif; ?>
 					</li>
-				<? endforeach; ?>
+				<?php endforeach; ?>
 			</ul>
 		</div>
-		<?
+		<?php
 	}
 	
 	
