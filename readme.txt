@@ -6,7 +6,7 @@ Tested up to: 3.4.1
 Stable tag: 1.2.2.1
 
 Manage and display advanced user profiles on your website.
-
+ 
 == Description ==
 
 This plugin allows for management of user public profiles with a lot of customizability.
