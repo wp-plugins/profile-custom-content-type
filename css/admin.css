@@ -1,104 +1,161 @@
-.nav-tab-wrapper span{
-	font-size: 12px;
-	color:#AAA;
+/**
+ * Displayed on Profile CCT's settings page. (across all tabs)
+ */
+.nav-tab-wrapper span {
 	padding-right: 5px;
 	padding-left: 20px;
-}
-#col-left{
-	/* width:625px; */
-	margin: 0;
-    overflow: hidden;
-    padding: 0;
-    float: left;
-}
-#col-right{
-	width:150px;
-	float: left;
-	margin:0 10px 0 0;
-	
-}
-#col-middle{
-	max-width: 960px;
-	width: 77%;
-	margin: 0;
-    padding: 0;
-    float: left;
- 
-}
-#col-middle #normal-shell,
-#col-middle #tabs{
-	max-width: 655px;
-    width: 68%;
-	float: left;
-}
-#tabs .ui-tabs-nav{
-	border-bottom: 1px solid #CCCCCC;
-    padding-bottom: 0;
-    height: 27px;
-    margin-bottom: 10px;
-}
-#col-middle #side-shell{
-	max-width: 300px;
-	width: 31%;
-	float: right;
-}
-#side-shell .form-builder{
-	/* width: 322px; */
-}
-#side-shell .form-builder li{
-	/* width: 280px; */
-}
-#notify{
-	 float: left;
-    height: 30px;
-    margin-left: 230px;
-    margin-top: -43px;
-}
-#notify span{
-	display: none;
-    background-color: #FDF5D9;
-    border:1px  #FCEEC1 solid;
-    border-radius: 4px;
-    color: #404040;
-    margin-bottom: 18px;
-    padding: 7px 15px;
-    position: relative;
-    top:5px;
-    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
- }
-#notify img{
-	top:3px;
-	position: relative;
-}
-.info{
-	background: #EAF2FA;
-	padding: 5px;
-	border-radius: 4px;
-}
-.info em{
+	color:#AAA;
 	font-size: 12px;
 }
 
-.profile-cct-shell{
+.ui-tabs-nav a:focus {
+    outline: none;
+}
+
+#col-left {
+    float: left;
+    overflow: hidden;
+	margin: 0;
+    padding: 0;
+}
+
+#col-right {
 	float: left;
-    max-width: 649px;
-    width: 98%;
+	margin: 0 10px 0 0;
+	max-width: 150px;
+}
+
+#col-middle {
+    float: left;
+	margin: 0;
+    padding: 0;
+	width: 77%;
+	max-width: 960px;
+}
+
+.preview-shell > .context-shell {
+	float: left;
+	width: 68%;
+}
+
+#side-shell {
+	float: right;
+	width: 31%;
+}
+
+#side-shell .avatar {
+	width: 100%;
+	height: auto;
+	max-width: 150px;
+    margin-left: 3px;
+}
+
+#tabs .ui-tabs-nav {
+    margin-bottom: 10px;
+    padding-bottom: 0;
+    height: 27px;
+	border-bottom: 1px solid #CCCCCC;
+    white-space: nowrap;
+}
+
+#tabs .nav-tabs-wrapper {
+    overflow: auto;
+    overflow-y: hidden;
+}
+
+#notify {
+	float: left;
+    margin-top: -43px;
+    margin-left: 230px;
+    height: 30px;
+}
+
+#notify span {
+    position: relative;
+    top: 5px;
+	display: none;
+    margin-bottom: 18px;
+    padding: 7px 15px;
+    border: 1px #FCEEC1 solid;
+    border-radius: 4px;
+    background-color: #FDF5D9;
+    color: #404040;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+#notify img {
+	position: relative;
+	top: 3px;
+}
+
+.info {
+	padding: 5px;
+	border-radius: 4px;
+	background: #EAF2FA;
+}
+
+.info em {
+	font-size: 12px;
+}
+
+.profile-cct-shell {
+	float: left;
     clear: both;
+    width: 98%;
+    max-width: 649px;
 }
-/*
-<a class="close" href="#">x</a>
-.close{
-	 position: relative;
-    top:5px;
-    left: 5px;
-	color: #000000;
-    font-size: 16px;
-    font-weight: bold;
-    line-height: 13.5px;
-    opacity: 0.2;
-    text-shadow: 0 1px 0 #FFFFFF;
-    text-decoration: none;
+
+.update-profiles {
+	padding: 20px 10px;
 }
-.close:hover{
+
+.profile-version {
+	clear: both;
+	margin-top: 10px;
+	color: #AAA;
+	text-align: right;
+}
+
+#update-profiles-slider {
+	display: none;
+	padding: 20px 10px;
+	overflow: hidden;
+	background: #FCFCFC;
+	-webkit-border-radius: 4px;
+    -moz-border-radius: 4px;
+    border-radius: 4px;
+}
+
+#update-profiles-slider .slider-shell {
+	border: 1px solid #CCC;
+	background: #FFF;
+	-webkit-border-radius: 6px;
+	-moz-border-radius: 6px;
+	border-radius: 6px;
+	overflow: hidden;
+	width: 150px;
+	height: 12px;
+	float: left;
+	margin-right: 10px;
+}
+
+#update-profiles-slider .slider-shell div {
+	height: 12px;
+	background: #CCC;
+}
+
+#update-profiles-slider.active-slider {
+	display: block;
+}
+
+.close:hover {
 	opacity: 0.8;
-}*/
+}
+
+tr.disabled td {
+    color: #BBBBBB;
+}
+
+#mce_fullscreen_add_media {
+    display: none;
+}

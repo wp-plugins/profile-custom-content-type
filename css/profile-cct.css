@@ -1,45 +1,283 @@
+/**
+ * Used to display content on the profile
+ */
+
 .half,
 .one-third,
-.two-third{
+.two-third {
 	float: left;
 	clear: none;
 }
+
 .inline,
-.inline div{
+.inline div {
 	width: auto;
 	display: inline;
 }
+
 .one-third {
-	width:33.3%;
+	width: 33.3%;
 }
 
 .two-third {
-	width:66.6%;
-}
-.half {
-	width:50%;
-}
-.full {
-	clear:both;
+	width: 66.6%;
 }
 
-.profile_cct{
-	position: relative;
-	overflow: hidden;
+.half {
+	width: 50%;
 }
-.profile-cct-shell{
+
+.full {
 	clear: both;
 }
 
-.profile-cct-shell h3{
+.profile_cct:before,
+.profile_cct:after {
+    content: " ";
+    display: table;
+}
+
+.profile_cct:after {
+    clear: both;
+}
+
+/**
+ * For IE 6/7 only
+ * Include this rule to trigger hasLayout and contain floats.
+ */
+.profile_cct {
+    *zoom: 1;
+}
+
+.profile-cct-shell {
+	clear: both;
+}
+
+.profile-cct-shell h3 {
 	margin-bottom: 0;
 }
 
-.ui-autocomplete { position: absolute; cursor: default; background-color:#fff;border:1px solid #ddd;padding:4px;}	
-.ui-autocomplete li{list-style-type:none;}
-* html .ui-autocomplete { width:1px; } /* without this, the menu expands to 100% in IE6 */
+.profilelist-shortcode article {
+    padding-bottom: 1em;
+    border-bottom: 1px dashed lightgray;
+}
 
-.profile-cct-filter-box{
-	margin-right:16px;
-	float:left;
+.field-item > .field-shell > .field:last-child > *:last-child {
+    margin-bottom: 10px;
+}
+
+.field-shell-name .field h2 {
+    margin-top: 0;
+    padding-top: 0;
+}
+
+.field-item-taxonomy .field, 
+.field-item-taxonomy .text-input{
+    float: left;
+    margin-right: 5px;
+}
+
+.field-shell-projects .field,
+.field-shell-courses .field {
+    margin-bottom: 5px;
+}
+
+.field-shell-social img {
+    margin-right: 5px;
+}
+
+/* ----- Tabs ----- */
+.type-profile_cct .ui-tabs-nav {
+	border-bottom: 1px solid #CCCCCC;
+    padding-bottom: 0;
+    min-height: 30px;
+    margin-bottom: 10px;
+    padding-top: 10px;
+}
+
+.type-profile_cct .ui-tabs-nav li.ui-state-active,
+.type-profile_cct .ui-tabs-nav li a:hover {
+	border-color: #CCCCCC #CCCCCC #FFFFFF;
+}
+
+.type-profile_cct .ui-tabs-nav li {
+    border-color: #DFDFDF #DFDFDF #CCC;
+    border-radius: 3px 3px 0 0;
+    border-style: solid;
+    border-width: 1px;
+    color: #AAAAAA;
+    display: inline-block;
+    font-size: 17px;
+    line-height: 19px;
+    margin: 0 6px -1px 0;
+    text-decoration: none;
+    text-shadow: 0 1px 0 #FFFFFF;
+    float: left;    
+}
+
+.type-profile_cct .ui-tabs-nav li a {
+	color: #AAAAAA;
+	text-decoration: none;
+	display: block;
+	padding: 4px 14px 6px 14px;
+}
+
+.type-profile_cct .ui-tabs-nav li a:focus {
+    outline: none;
+}
+
+.type-profile_cct .ui-tabs-nav li.ui-state-active a {
+	color: #464646;
+	padding: 4px 14px 6px 14px;
+}
+
+.type-profile_cct .ui-statehover {
+	background: #EEE;
+}
+
+.profile_cct div.tabs.ui-tabs {
+   	border-bottom: 1px solid #CCCCCC;
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+
+.profile_cct div.tabs {
+    border-bottom: 1px solid #D7E0E7;
+    margin-bottom: 20px;
+}
+.user-avatar-display-image img{
+	max-width: 100%;
+	height: auto;
+}
+
+/* Autocomplete */
+.profile-cct-search-form .ui-helper-hidden {
+	display: none;
+}
+
+.profile-cct-search-form .ui-helper-hidden-accessible {
+	border: 0;
+	clip: rect(0 0 0 0);
+	height: 1px;
+	margin: -1px;
+	overflow: hidden;
+	padding: 0;
+	position: absolute;
+	width: 1px;
+}
+
+.profile-cct-search-form .ui-helper-reset {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	outline: 0;
+	line-height: 1.3;
+	text-decoration: none;
+	font-size: 100%;
+	list-style: none;
+}
+
+.profile-cct-search-form .ui-helper-clearfix:before,
+.profile-cct-search-form .ui-helper-clearfix:after {
+	content: "";
+	display: table;
+	border-collapse: collapse;
+}
+
+.profile-cct-search-form .ui-helper-clearfix:after {
+	clear: both;
+}
+
+.profile-cct-search-form .ui-helper-clearfix {
+	min-height: 0; /* support: IE7 */
+}
+
+.profile-cct-search-form .ui-helper-zfix {
+	width: 100%;
+	height: 100%;
+	top: 0;
+	left: 0;
+	position: absolute;
+	opacity: 0;
+	filter: Alpha(Opacity=0);
+}
+
+.profile-cct-search-form .ui-front {
+	z-index: 100;
+}
+
+.ui-autocomplete-input,
+.ui-autocomplete {
+	width: 100%;
+	max-width: 200px;
+	
+}
+
+.profile-cct-search-form .btn {
+	margin-bottom: 10px;
+}
+
+.ui-autocomplete {
+	display: block;
+	border: 1px solid #CCC;
+	background: #FFF;
+}
+
+.ui-autocomplete .ui-menu-item {
+	background: #FFF;
+	list-style: none;
+	padding: 5px 10px;
+}
+
+.ui-autocomplete .ui-menu-item a {
+	text-transform: none;
+	text-decoration: none;
+	color: #666;
+}
+
+/* Interaction states
+----------------------------------*/
+.ui-autocomplete .ui-state-default {
+	border: 1px solid #cccccc;
+	background: #f6f6f6 url(images/ui-bg_glass_100_f6f6f6_1x400.png) 50% 50% repeat-x;
+	font-weight: bold;
+	color: #1c94c4;
+}
+
+.ui-autocomplete .ui-state-default a,
+.ui-autocomplete .ui-state-default a:link,
+.ui-autocomplete .ui-state-default a:visited {
+	color: #1c94c4;
+	text-decoration: none;
+}
+
+.ui-autocomplete .ui-state-hover,
+.ui-autocomplete .ui-state-focus {
+	color: #c77405;
+	display: block;
+	background: #EEE;
+	color: #333;
+	margin: -5px -10px;
+	padding: 5px 10px;
+}
+
+.ui-autocomplete .ui-state-hover a,
+.ui-autocomplete .ui-state-hover a:hover,
+.ui-autocomplete .ui-state-hover a:link,
+.ui-autocomplete .ui-state-hover a:visited {
+	color: #c77405;
+	text-decoration: none;
+}
+
+.ui-autocomplete .ui-state-active {
+	border: 1px solid #fbd850;
+	font-weight: bold;
+	color: #eb8f00;
+}
+
+.ui-autocomplete .ui-state-active a,
+.ui-autocomplete .ui-state-active a:link,
+.ui-autocomplete .ui-state-active a:visited {
+	color: #eb8f00;
+	text-decoration: none;
 }

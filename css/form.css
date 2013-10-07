@@ -1,29 +1,48 @@
-
-
+/* This file is being included on the form builder */
 
 /* ----- Field Structure ----- */
+.profile-view-builder .field-item {
+    margin: 0;
+}
+
+#col-container .field-shell {
+    pointer-events: none;
+    padding: 5px 10px;
+}
+
+.field {
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .form-builder {
-	list-style-type:none;
-	/* width:645px; */
+	list-style-type: none;
 }
 
 * html .form-builder {
-/* IE6 Margin Percent Bug for Halves/Thirds */
-	width:99%;
-	zoom:1;
+    /* IE6 Margin Percent Bug for Halves/Thirds */
+	width: 99%;
+	zoom: 1;
 }
-.sort{
-	padding: 5px 0 0 0;
-	border: 1px dashed #EEE;
+
+#normal-shell,
+#page-shell,
+#side-shell {
+  margin-top: -10px;
+}
+
+/* Sorting */
+ul.sort {
+	padding: 5px;
+	border: 1px dashed #DDD;
 	margin-bottom: 16px;
 	overflow: hidden;
-	
 }
-.sort li{
-	padding:0 0 0 20px;
-	clear:both;
-	position:relative;
-	border:1px solid #DFDFDF;
+
+ul.sort > li {
+	clear: both;
+	position: relative;
+	border: 1px solid #DFDFDF;
     border-radius: 3px 3px 3px 3px;
     box-shadow: 0 1px 0 #FFFFFF inset;
 	background-color: #F1F1F1;
@@ -33,20 +52,18 @@
 	background-image: -webkit-gradient(linear,left top,left bottom,from(#F9F9F9),to(#ECECEC));
 	background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
 	background-image: linear-gradient(top,#F9F9F9,#ECECEC);
-
 }
-.sort .field-title {
+
+ul.sort .field-title {
 	font-family: Georgia,"Times New Roman","Bitstream Charter",Times,serif;
     font-size: 15px;
     font-weight: normal;
     line-height: 1;
-    margin: 0 0 0 -20px;
     padding: 7px 10px;
 	color: #464646;
 	text-transform: capitalize;
-	cursor:move;
-	width:100%;
-	display:block;
+	cursor: move;
+	display: block;
     background-color: #F1F1F1;
 	background-image: -ms-linear-gradient(top,#F9F9F9,#ECECEC);
 	background-image: -moz-linear-gradient(top,#F9F9F9,#ECECEC);
@@ -55,7 +72,8 @@
 	background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
 	background-image: linear-gradient(top,#F9F9F9,#ECECEC);
 }
-.sort .is-active .field-title{
+
+ul.sort .is-active .field-title {
 	background-color: #D3E3EB;
 	background-image: linear-gradient(bottom, #BCD5E1 0%, #D3E3EB 100%);
 	background-image: -o-linear-gradient(bottom, #BCD5E1 0%, #D3E3EB 100%);
@@ -64,14 +82,17 @@
 	background-image: -ms-linear-gradient(bottom, #BCD5E1 0%, #D3E3EB 100%);
 	background-image: -webkit-gradient( linear,left bottom,left top,color-stop(0, #BCD5E1),color-stop(1, #D3E3EB) );
 }
-.form-builder li {
-	margin:0 5px 5px;
-	padding:0 0 15px 20px;
-	/* max-width:629px; */
-	
-	clear:both;
-	position:relative;
-	border:1px solid #DFDFDF;
+
+ul.sort .is-active {
+    border-color: #BCD5E1;
+}
+
+.form-builder ul.sort > li {
+	margin: 0 5px 5px;
+	padding: 0 0 15px 20px;
+	clear: both;
+	position: relative;
+	border: 1px solid #DFDFDF;
     border-radius: 3px 3px 3px 3px;
     box-shadow: 0 1px 0 #FFFFFF inset;
 	background-color: #F1F1F1;
@@ -82,175 +103,194 @@
 	background-image: -webkit-linear-gradient(top,#F9F9F9,#ECECEC);
 	background-image: linear-gradient(top,#F9F9F9,#ECECEC);
 }
-.form-builder li hr{
-	border:0;
+
+.form-builder li hr {
+	border: 0;
 	height: 0;
 	border-top: 1px solid rgba(0,0,0,0.1);
 	border-bottom: 1px solid rgba(255,255,255, 0.3);
-		margin-right:20px;
+	margin-right: 20px;
 }
+
 .form-builder ul:after,
 .form-builder li:after,
 .form-builder li div:after {
-	content:".";
-	display:block;
-	height:0;
-	clear:both;
-	visibility:hidden
+	display: block;
+	height: 0;
+	clear: both;
+	visibility: hidden;
+}
 
-
+.form-builder ul:after,
+.form-builder ul:not(.category-tabs) li:after,
+.form-builder li div:after {
+	content: ".";
 }
 
 * html .form-builder li {
-	height:1%;
-	margin-bottom:-3px
+	height: 1%;
+	margin-bottom: -3px;
 }
 
 *+html .form-builder li {
-	height:1%;
-	margin-bottom:-3px
+	height: 1%;
+	margin-bottom: -3px;
 }
 
 * html .form-builder li div {
-	display:inline-block
+	display: inline-block;
 }
 
 *+html .form-builder ul,
 *+html .form-builder li div {
-	display:inline-block
+	display: inline-block;
 }
 
 .form-builder li div {
-	margin:0;
-	padding:0;
-	color:#444
+	margin: 0;
+	padding: 0;
+	color: #444
 }
 
-.form-builder li .field-shell div{
+.form-builder li .field-label {
+    width: 100%;
+}
+
+.form-builder li .field-shell div {
 	display: block;
 	clear: both;
 }
 
-.form-builder li span {
-	margin:0 .3em 0 0;
-	padding:0;
-	float:left;
-	color:#444
+.profile-form-builder .form-builder li span {
+	margin: 0 .5em 0 0;
+	padding: 0;
+	float: left;
+	color: #444;
 }
-.form-builder li span em{
-	color:#AAA;
+
+.form-builder li span em {
+	color: #AAA;
 }
-.form-builder li a span{
-	color:#21759B;
+
+.form-builder li a span {
+	color: #21759B;
 }
-.form-builder li a:hover span{
+
+.form-builder li a:hover span {
 	color: #D54E21;
 }
-.form-builder li .textarea-shell{
-	width: 96%;
+
+.form-builder li .textarea-shell {
+	width: 100%;
 }
 
 .form-builder .description {
 	display: block;
-	clear:both;
-	position: relative;
-    top: 10px;
-    padding:0;
+	clear: both;
+    padding: 0;
     font-family: sans-serif;
     color: #AAA;
 }
 
-.add-multiple{
+#preview-form .field-shell span.add-multiple {
 	clear: both;
-	position: relative;
-    top: 3px;
+    margin: 4px 0;
 }
-.form-builder .spinner{
+
+.form-builder .spinner {
 	float: left;
     margin-left: 3px;
     margin-top: 18px;
     width: auto;
 }
-.save-field-settings{
-	margin-top: 15px;
+
+.edit-shell .save-field-settings {
+	margin-top: 5px;
 	clear: both;
 	float: left;
 }
+
 /* ----- Choices Field Structures ----- */
-#preview-form .form-builder li div span,
-.form-builder li div span {
-	margin:0 5px 0 0;
-	display:block;
-	float:left;
+#preview-form .form-builder li div span {
+	margin: 0 .3em 0 0;
+	display: block;
+	float: left;
 }
+
 .form-builder li .field-shell span,
-.form-builder li div span.separator{
+.form-builder li div span.separator {
 	float: none;
 	display: inline;
 }
-/* , */
-.form-builder li div span.comma{
+
+.form-builder li div span.comma {
 	margin: 0 5px 0 -5px;
 }
-
 
 /* ----- Name Field Structuure ----- */
 .form-builder .name span input,
 .form-builder .project-title input {
-	font-size:16px
+	font-size: 16px;
 }
 
-
-/* ----- Location Field Structures ----- */
-
-
-
-.form-builder .left {
-	float:left
+/* ----- Picture Field Structuure ----- */
+.form-builder .shell-picture .field-shell img {
+    width: 100%;
+    height: auto;
+    max-width: 150px;
 }
 
-.form-builder .right {
-	float:right
+/* ----- Taxonomy Field ----- */
+#preview-form .form-builder .tabs-panel {
+    width: 85%;
+    overflow: hidden;
 }
 
-/* ----- LABELS ----- */
-.form-builder li div label,
-.form-builder li span label {
-	margin:0;
-	padding:1px 0 10px;
-	clear:both;
-	font-size:85%;
-	line-height:160%;
-	color:#444;
-	display:block
+/* ----- Labels ----- */
+.form-builder li label {
+	margin: 0;
+	padding: 1px 0 10px;
+	clear: both;
+	font-size: 85%;
+	line-height: 160%;
+	color: #444;
+	display: block;
 }
-.form-builder li .edit-shell label{
-	padding:10px 0 1px;
+
+.form-builder ul.categorychecklist label {
+    padding: 0;
+    font-size: 100%;
 }
-.form-builder li .edit-shell div label{
-	padding:1px 0;
+
+.form-builder li .edit-shell label {
+	padding: 10px 0 1px;
 }
-.form-builder li .edit-shell div input{ margin-top: 3px;}
+
+.form-builder li .edit-shell div label {
+	padding: 1px 0;
+}
+
+.form-builder li .edit-shell div input {
+    margin-top: 3px;
+}
 
 .form-builder fieldset {
-	display:block;
-	border:none;
-	margin:0;
-	padding:0
+	display: block;
+	border: none;
+	margin: 0;
+	padding: 0;
 }
 
 .form-builder .field-title {
-	font-family: Georgia,"Times New Roman","Bitstream Charter",Times,serif;
+	font-family: Georgia, "Times New Roman", "Bitstream Charter", Times, serif;
     font-size: 15px;
     font-weight: normal;
     line-height: 1;
-    margin: 0 0 10px -20px;
     padding: 7px 0 7px 20px;
 	color: #464646;
 	text-transform: capitalize;
-	cursor:move;
-	width:100%;
-	display:block;
+	cursor: move;
+	display: block;
 	border-bottom-color: #DFDFDF;
     box-shadow: 0 1px 0 #FFFFFF;
     text-shadow: 0 1px 0 #FFFFFF;
@@ -258,148 +298,180 @@
     background-image: -moz-linear-gradient(center top , #F9F9F9, #ECECEC);
 }
 
-.form-builder .text,
-.form-builder textarea,
-.form-builder .select {
-	font-family:"Lucida Grande",Tahoma,Arial,sans-serif;
-	font-size:100%;
-	color:#333;
-	margin:0;
-	padding:2px;
-	-moz-border-radius:3px;
-	-webkit-border-radius:3px;
-	-khtml-border-radius:3px;
-	border-radius:3px;
-	border:1px solid #DFDFDF;
-	/*width: 100%; commented this out as it interferes with checkboxes being displayed on signle line with label and appears to not affect anything else*/
+.form-builder li .days.multiple-shell label {
+	display: inline-block;
 }
 
-/*for checkboxes to display in one line*/
 .form-builder li div.multiple-shell label {
-	display: inline;
 	margin-right: 10px;
 }
 
-#side-shell .form-builder .text,
-#side-shell .form-builder textarea,
-#side-shell .form-builder .select{
-	max-width: 275px;
-}
-
-#wpcontent .form-builder select{
+#wpcontent .form-builder select {
     font-size: 12px;
     height: 21px;
     margin-top: 0;
     padding: 2px 4px;
 }
-.form-builder textarea{
-	height:200px;
+
+.form-builder textarea {
+	height: 200px;
 }
-.edit-shell textarea{
+
+.edit-shell textarea {
 	height: 100px;
 }
-.form-builder .text,
+
+.form-builder input.text,
+.form-builder textarea,
+.form-builder .select {
+	font-family: "Lucida Grande",Tahoma,Arial,sans-serif;
+	font-size: 100%;
+	color: #333;
+	margin: 0;
+	padding: 2px;
+	-moz-border-radius: 3px;
+	-webkit-border-radius: 3px;
+	-khtml-border-radius: 3px;
+	border-radius: 3px;
+	border: 1px solid #DFDFDF;
+}
+
+#preview-form .form-builder li div .street-2,
+#preview-form .form-builder li div .street-1 {
+	width: 100%;
+}
+
+#preview-form .form-builder li div .street-2 input,
+#preview-form .form-builder li div .street-1 input {
+	width: 98%;
+}
+
+.form-builder input.text,
 .form-builder textarea {
-	border:1px solid #DFDFDF;
-	-moz-border-radius:4px;
-	-webkit-border-radius:4px;
-	-khtml-border-radius:4px;
-	border-radius:4px;
-	background:#fff
+	border: 1px solid #DFDFDF;
+	-moz-border-radius: 4px;
+	-webkit-border-radius: 4px;
+	-khtml-border-radius: 4px;
+	border-radius: 4px;
+	background: #fff;
+	max-width: 74em;
+	margin-right: 10px;	
 }
 
 .form-builder .select {
-	padding:1px 0 0
+	padding: 1px 0 0;
 }
 
 * html .form-builder .select {
-	margin:1px 0
+	margin: 1px 0;
 }
 
 *+html .form-builder .select {
-	margin:1px 0
+	margin: 1px 0;
 }
 
-/* ----- SIZES ----- */
+/* ----- Sizes ----- */
 .form-builder .half,
 .form-builder .one-third,
-.form-builder .two-third{
-	float: left!important;
-	clear: none!important;
-}
-.form-builder .one-third textarea,
-.form-builder .one-third {
-	width:170px!important;
-}
-.form-builder .two-third textarea,
 .form-builder .two-third {
-	width:380px!important;
+	float: left;
+	clear: none;
+    margin: 0;
 }
-.form-builder .half textarea,
+
+.form-builder .one-third {
+	width: 32.9%;
+}
+
+.form-builder .two-third {
+	width: 66%;
+}
+
 .form-builder .half {
-	width:275px!important;
-	
+	width: 49.6%;
 }
-.form-builder .inline .field-shell{
+
+.form-builder .field-item textarea {
+	width: 100%;
+}
+
+.form-builder .edit-shell .field-text {
+    width: 100%
+}
+
+.form-builder .inline .field-shell {
 	width: auto;
 	display: inline;
 }
 
-/*.form-builder .full {
-	/* width:595px !important; 
-	width: 100%;
-}
-*/
-.form-builder input.small,.form-builder select.small {
-	width:25%
+.form-builder input.small,
+.form-builder select.small {
+	width: 25%;
 }
 
-.form-builder input.medium,.form-builder select.medium {
-	width:50%
-}
-
-.form-builder textarea {
-	/* width:595px */
-	width: 100%;
+.form-builder input.medium,
+.form-builder select.medium {
+	width: 50%;
 }
 
 /* ----- Action ----- */
-.form-builder li .edit {
-	float:right;
-	padding:5px 10px;
-	font-size:10px;
-	margin:0;
+.form-builder li .action-shell {
+	float: right;
+    padding: 5px;
+	margin: 0;
+    position: absolute;
+    top: 0;
+    right: 0;
 }
 
+.form-builder li .action {
+    height: 16px;
+	font-size: 10px;
+	margin: 0;
+}
 
+.form-builder li .action.edit {
+	font-size: 10px;
+    margin: 0 5px;
+	position: relative;
+    top: -5px;
+}
+
+.form-builder li .action.arrow {
+	visibility: hidden;
+}
+
+.form-builder li:hover .action.arrow {
+	visibility: visible;
+}
 
 .form-builder li .edit-shell {
-	background:#EAF2FA;
-	margin:0 0 0 -20px;
-	padding:10px 0 10px 20px;
+	background: #EAF2FA;
+	padding: 10px;
 }
-.edit-shell span{
-	width:96%;
+
+.edit-shell span {
+	width: 100%;
 }
 
 /* ----- Sorting ----- */
 #page-shell .form-builder .ui-state-highlight,
 .ui-state-highlight {
-	background:#DFDFDF;
+	background: #DFDFDF;
 	height: 20px;
-	border:1px solid #AAA	
+	border: 1px solid #AAA	
 }
 
 li.ui-sortable-helper {
-	border:0;
-	-moz-box-shadow:0 0 5px #888;
-	-webkit-box-shadow:0 0 5px#888;
-	box-shadow:0 0 5px #888;
-	opacity: .8; /* to do add opacity */
+	border: 0;
+	-moz-box-shadow: 0 0 5px #888;
+	-webkit-box-shadow: 0 0 5px #888;
+	box-shadow: 0 0 5px #888;
+	opacity: 0.8; /* to do add opacity */
 }
 
 /* ----- Tabs ----- */
-.ui-tabs-nav{
+.ui-tabs-nav {
 	border-bottom: 1px solid #CCCCCC;
     padding-bottom: 0;
     height: 27px;
@@ -407,11 +479,11 @@ li.ui-sortable-helper {
 }
 
 .ui-tabs-nav li.ui-state-active,
-.ui-tabs-nav li a:hover{
+.ui-tabs-nav li a:hover {
 	border-color: #CCCCCC #CCCCCC #FFFFFF;
 }
 
-.ui-tabs-nav li{
+.ui-tabs-nav li {
     border-color: #DFDFDF #DFDFDF #CCC;
     border-radius: 3px 3px 0 0;
     border-style: solid;
@@ -425,23 +497,28 @@ li.ui-sortable-helper {
     text-shadow: 0 1px 0 #FFFFFF;
     font-weight: bold;
 }
-.ui-tabs-nav li a{
+
+.ui-tabs-nav li a {
 	color: #AAAAAA;
 	text-decoration: none;
 	float: left;
 	padding: 4px 14px 6px 14px;
 }
-.ui-tabs-nav li.ui-state-active a{
-	color:#464646;
+
+.ui-tabs-nav li.ui-state-active a {
+	color: #464646;
 	padding: 4px 4px 6px 14px;
 }
+
 .ui-statehover {
 	background: #EEE;
 }
-.edit-tab:hover{
-	color:#D54E21;
+
+#tabs .edit-tab:hover {
+	color: #D54E21;
 }
-.edit-tab{
+
+#tabs .edit-tab {
 	float: right;
 	margin-top: 4px;
 	margin-left: 4px;
@@ -449,103 +526,131 @@ li.ui-sortable-helper {
 	color: #21759B;
 	font-weight: normal;
 }
-.ui-state-active .remove-tab,
-.ui-state-active .edit-tab{
+
+#tabs .ui-state-active .remove-tab,
+#tabs .ui-state-active .edit-tab {
 	display: block;
 }
-.editing .remove-tab,
-.editing .edit-tab,
-.editing .tab-link,
-.edit-tab-input,
-.edit-tab-save,
-.edit-tab,
-.remove-tab{
+
+#tabs .editing .remove-tab,
+#tabs .editing .edit-tab,
+#tabs .editing .tab-link,
+#tabs .edit-tab-input,
+#tabs .edit-tab-save,
+#tabs .edit-tab,
+#tabs .remove-tab {
 	display: none;
 }
-.editing .edit-tab-input{
+
+#tabs .editing .edit-tab-input {
 	width: 120px;
-	margin: 4px 4px 0;
+	margin: 3px 4px 0;
 	display: block;
 	float: left;
 }
-.editing .edit-tab-save{
+
+#tabs .editing .edit-tab-save {
 	display: block;
 	float: left;
 	margin: 2px 2px 0 0;
 }
-.editing {
+
+#tabs .editing {
 	position: relative;
 	overflow: hidden;
 }
-#add-tab-shell a{
+
+#add-tab-shell a {
 	padding: 4px 14px 6px 14px;
 }
+
 #add-tab-shell {
 	border: 0;
 }
 
-.remove-tab { 
+#tabs .remove-tab { 
 	float: right; 
 	margin: 4px 4px 0 4px; 
 	cursor: pointer;
 	height: 16px;
     width: 16px;
-	background: url(img/222222_256x240_icons_icons.png) no-repeat -80px -128px;
+	background: url(../img/icons.png) no-repeat -80px -128px;
     overflow: hidden;
     text-indent: -99999px;
 }
-#bench{
+
+/* Bench */
+#bench {
 	background: #CCC;
 	border: 0;
-	padding:5px 5px 2px;
+	padding: 5px 5px 2px;
 	min-height: 400px;
 	-moz-border-radius: 3px;
 	border-radius: 3px;
 }
-#bench li{
-	width: 104px;
+
+#bench li {
+    margin-bottom: 4px;
 }
 
 .ui-sortable-helper .field-shell,
 .ui-sortable-helper .remove,
-.ui-sortable-helper .edit,
+.ui-sortable-helper .action-shell,
 .ui-sortable-helper .add-multiple,
 .ui-sortable-helper .description,
 #bench li .field-shell,
 #bench li .remove,
-#bench li .edit,
+#bench li .action-shell,
 #bench li .add-multiple,
-#bench li .description
-{
+#bench li .description {
 	display: none !important;
 	height: 0;
 }
 
-/* Page Fields */
+/* Page Fields and List Fields */
+#list-shell .form-builder li,
+#list-shell .form-builder .field-title,
 #page-shell .form-builder li,
-#page-shell .form-builder .field-title{
+#page-shell .form-builder .field-title {
 	background: #FFF;
 }
-#page-shell .form-builder li{
+
+#list-shell .form-builder li,
+#page-shell .form-builder li {
 	border: 1px solid #FFF;
 }
+
+#list-shell .form-builder .ui-state-highlight,
+#list-shell .form-builder li:hover .field-title,
+#list-shell .form-builder li.hover-expanded .field-title,
 #page-shell .form-builder .ui-state-highlight,
 #page-shell .form-builder li:hover .field-title,
-#page-shell .form-builder li.hover-expanded .field-title{
+#page-shell .form-builder li.hover-expanded .field-title {
 	background-color: #F1F1F1;
     background-image: -moz-linear-gradient(center top , #F9F9F9, #ECECEC);
 }
+
+#list-shell .form-builder li.hover-expanded,
+#list-shell .form-builder li:hover,
 #page-shell .form-builder li.hover-expanded,
-#page-shell .form-builder li:hover{
+#page-shell .form-builder li:hover {
 	border: 1px solid #CCC;
 }
+
+#list-shell .field-title,
+#list-shell .action-shell,
 #page-shell .field-title,
-#page-shell .edit {
+#page-shell .action-shell {
 	display: none;
 }
-#page-shell .hover-expanded .field-title,
-#page-shell .hover-expanded .edit,
-#page-shell .hover .field-title,
-#page-shell .hover .edit{
+
+#list-shell li.hover-expanded .field-title,
+#list-shell li.hover-expanded .action-shell,
+#list-shell li:hover .field-title,
+#list-shell li:hover .action-shell,
+#page-shell li.hover-expanded .field-title,
+#page-shell li.hover-expanded .action-shell,
+#page-shell li:hover .field-title,
+#page-shell li:hover .action-shell {
 	display: inherit;
 }
