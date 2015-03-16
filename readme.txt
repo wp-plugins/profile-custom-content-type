@@ -9,8 +9,7 @@ License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
 Manage and display advanced user profiles on your website.
-T: asdf
-T: fdsa
+
 == Description ==
 
 This plugin allows for management of user public profiles with a lot of customizability.
